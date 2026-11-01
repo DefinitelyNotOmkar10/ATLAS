@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Planify Cache</title>
+</head>
+<body>
+    <h1>Clearing Planify Cache...</h1>
+    <div id="result"></div>
+    <script>
+        // Clear all planify cache entries
+        const keys = Object.keys(localStorage);
+        let clearedCount = 0;
+        
+        keys.forEach(key => {
+            if (key.startsWith('planify_cache_')) {
+                localStorage.removeItem(key);
+                clearedCount++;
+            }
+        });
+        
+        document.getElementById('result').innerHTML = 
+            `<p style="color: green; font-size: 20px;">✅ Cleared ${clearedCount} cached trip(s)</p>
+             <p>You can close this window now.</p>`;
+        
+        console.log(`Cleared ${clearedCount} planify cache entries`);
+    </script>
+</body>
+</html>
