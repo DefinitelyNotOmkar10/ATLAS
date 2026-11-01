@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { createClient } from "@/lib/client";
+import { createClient, isSupabaseConfigured } from "@/lib/client";
 import type { User } from "@supabase/supabase-js";
 
 export interface AuthState {
@@ -12,11 +12,16 @@ export interface AuthState {
 }
 
 export function useAuth(): AuthState {
-  const supabase = useMemo(() => createClient(), []);
+  const supabaseConfigured = isSupabaseConfigured();
+  const supabase = useMemo(() => (supabaseConfigured ? createClient() : null), [supabaseConfigured]);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
     let isMounted = true;
 
     // Get initial session
@@ -42,7 +47,7 @@ export function useAuth(): AuthState {
   }, [supabase]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await supabase?.auth.signOut();
     setUser(null);
   };
 

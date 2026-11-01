@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/client";
+import { createClient, isSupabaseConfigured } from "@/lib/client";
 import { AtlasLogo } from "@/components/ui/AtlasLogo";
 import { ArrowLeft, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 
@@ -14,7 +14,8 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const requestedRedirect = searchParams.get("next");
   const redirectTo = requestedRedirect?.startsWith("/") ? requestedRedirect : "/onboarding";
-  const supabase = useMemo(() => createClient(), []);
+  const supabaseConfigured = isSupabaseConfigured();
+  const supabase = useMemo(() => (supabaseConfigured ? createClient() : null), [supabaseConfigured]);
   const [mode, setMode] = useState<AuthMode>("sign-in");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -25,6 +26,10 @@ function LoginContent() {
   const [currentEmail, setCurrentEmail] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!supabase) {
+      setErrorMessage("Account features aren't configured on this deployment yet.");
+      return;
+    }
     let isMounted = true;
 
     supabase.auth.getUser().then(({ data }) => {
@@ -47,6 +52,11 @@ function LoginContent() {
     event.preventDefault();
     setErrorMessage("");
     setStatusMessage("");
+
+    if (!supabase) {
+      setErrorMessage("Account features aren't configured on this deployment yet.");
+      return;
+    }
 
     if (!email.trim() || !password.trim()) {
       setErrorMessage("Please enter both an email and password.");
@@ -109,6 +119,8 @@ function LoginContent() {
   async function handleSignOut() {
     setErrorMessage("");
     setStatusMessage("");
+
+    if (!supabase) return;
 
     const { error } = await supabase.auth.signOut();
     if (error) {

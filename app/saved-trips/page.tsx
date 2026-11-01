@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AtlasLogo } from "@/components/ui/AtlasLogo";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { createClient } from "@/lib/client";
+import { createClient, isSupabaseConfigured } from "@/lib/client";
 import { getDestinationHeroImage } from "@/lib/utils/destinationImages";
 import { ArrowLeft, ArrowRight, Bookmark, Calendar, Trash2, Sparkles, Loader2, MapPin } from "lucide-react";
 
@@ -34,6 +34,7 @@ function getDays(start: string, end: string) {
 }
 
 export default function SavedTripsPage() {
+  const supabaseConfigured = isSupabaseConfigured();
   const { user, username, loading, signOut } = useAuth();
   const router = useRouter();
   const [trips, setTrips] = useState<SavedTrip[]>([]);
@@ -41,6 +42,18 @@ export default function SavedTripsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const initials = username ? username.slice(0, 2).toUpperCase() : "?";
+
+  if (!supabaseConfigured) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] px-6 text-center">
+        <div className="max-w-md space-y-4">
+          <h1 className="text-2xl font-black">Saved trips aren’t configured yet</h1>
+          <p className="text-sm text-black/60">Trip planning works without an account. Configure Supabase to enable sign-in and saved trips.</p>
+          <Link href="/" className="inline-flex rounded-full bg-blue-600 px-5 py-3 text-sm font-bold text-white">Back to ATLAS</Link>
+        </div>
+      </div>
+    );
+  }
 
   // Redirect unauthenticated users
   useEffect(() => {

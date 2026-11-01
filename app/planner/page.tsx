@@ -14,7 +14,7 @@ import HotelCard from '@/components/planner/HotelCard';
 import JourneyStopsCard from '@/components/planner/JourneyStopsCard';
 import TransportBookingsCard from '@/components/planner/TransportBookingsCard';
 import ConceptSelectionBoard from '@/components/planner/ConceptSelectionBoard';
-import { createClient } from '@/lib/client';
+import { createClient, isSupabaseConfigured } from '@/lib/client';
 import { AtlasLogo } from '@/components/ui/AtlasLogo';
 import { ArrowLeft, Bookmark, AlertTriangle, Sparkles, Layers } from 'lucide-react';
 
@@ -118,6 +118,7 @@ export default function PlannerPage() {
   }, []);
 
   async function saveTrip(onboardingInfo: OnboardingData, itineraryInfo: ItineraryResponse) {
+    if (!isSupabaseConfigured()) return;
     try {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
